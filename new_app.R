@@ -30,6 +30,7 @@ customCSS <- HTML("
     --hhs-color: #E91E63;
     --hud-color: #3F51B5;
     --interior-color: #795548;
+    --justice-color: #3F51B5;
     --state-color: #009688;
     --treasury-color: #FF9800;
     --usich-color: #607D8B;
@@ -196,6 +197,16 @@ customCSS <- HTML("
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
   }
+  
+  /* Reset filters button styling */
+  .btn-reset {
+    background-color: #6c757d; /* Different color for reset button */
+    color: white;
+  }
+  
+  .btn-reset:hover {
+    background-color: #5a6268;
+  }
 
   /* Table styling */
   #tableContainer {
@@ -335,6 +346,14 @@ customCSS <- HTML("
   
   .department-Interior {
     background-color: rgba(121, 85, 72, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
+  }
+  
+  .department-Justice, .department-Department\\.of\\.Justice, .department-DOJ {
+    background-color: rgba(63, 81, 181, 0.3) !important;
     padding: 5px !important;
     border-radius: 4px !important;
     display: inline-block !important;
@@ -607,9 +626,13 @@ ui <- fluidPage(
               # Expand button with HTML icon
               actionButton("enterFullScreen", 
                            HTML('<i class="fas fa-expand"></i> Expand'),
-                           class = "btn btn-info")
+                           class = "btn btn-info"),
+              
+              # NEW: Add Reset Filters button
+              actionButton("resetFilters", 
+                           HTML('<i class="fas fa-undo"></i> Reset Filters'),
+                           class = "btn btn-reset")
           ),
-        
           
           # Auto-refresh info (moved to be next to buttons)
           div(class = "refresh-info",
@@ -709,6 +732,9 @@ server <- function(input, output, session) {
       "HUD" = "fas fa-building",
       "Housing and Urban Development" = "fas fa-building",
       "Interior" = "fas fa-mountain",
+      "Justice" = "fas fa-gavel",
+      "Department of Justice" = "fas fa-gavel",
+      "DOJ" = "fas fa-gavel",
       "State" = "fas fa-flag-usa",
       "Treasury" = "fas fa-dollar-sign",
       "USICH" = "fas fa-users",
@@ -866,6 +892,13 @@ server <- function(input, output, session) {
                           choices = c("All Actions" = "", actions))
       }
     }
+  })
+  
+  # NEW: Reset Filters Button Logic
+  observeEvent(input$resetFilters, {
+    updateSelectInput(session, "deptFilter", selected = "")
+    updateSelectInput(session, "statusFilter", selected = "")
+    updateSelectInput(session, "actionFilter", selected = "")
   })
   
   # Auto refresh timer
@@ -1113,5 +1146,5 @@ server <- function(input, output, session) {
   )
 }
 
-# Run the app
+# Run the application 
 shinyApp(ui = ui, server = server)
