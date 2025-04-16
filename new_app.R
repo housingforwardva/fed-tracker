@@ -791,6 +791,9 @@ server <- function(input, output, session) {
     
     # Format date columns to mm-dd-yyyy format if they exist
     if("Date" %in% names(data)) {
+      # Remove leading apostrophes from dates if they exist
+      data$Date <- gsub("^'", "", data$Date)
+      
       # Try to convert to date if possible, otherwise leave as is
       tryCatch({
         data$Date <- as.Date(data$Date)
