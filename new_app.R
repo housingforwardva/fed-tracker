@@ -556,7 +556,7 @@ customCSS <- HTML("
 ui <- fluidPage(
   useShinyjs(),
   tags$head(
-    tags$title("Federal Housing Policy Tracker"),
+    tags$title("Federal Housing Action Tracker"),
     tags$style(customCSS),
     # Add Font Awesome directly from CDN
     tags$link(rel = "stylesheet", 
@@ -602,7 +602,7 @@ ui <- fluidPage(
       div(class = "container-fluid",
           div(class = "header-content",
               tags$img(src = "vha-logo.png", height = "30px", class = "mr-2"),
-              tags$h1("Federal Housing Policy Tracker", class = "header-title")
+              tags$h1("Federal Housing Action Tracker", class = "header-title")
           )
       )
   ),
@@ -789,19 +789,62 @@ server <- function(input, output, session) {
         select(-any_of(existing_cols_to_remove))
     }
     
-    # Format date columns to mm-dd-yyyy format if they exist
+    # Improved date handling that preserves all values
     if("Date" %in% names(data)) {
+      # Create a copy of the original dates for debugging/fallback
+      original_dates <- data$Date
+      
       # Remove leading apostrophes from dates if they exist
       data$Date <- gsub("^'", "", data$Date)
       
-      # Try to convert to date if possible, otherwise leave as is
-      tryCatch({
-        data$Date <- as.Date(data$Date)
-        data$Date <- format(data$Date, "%m-%d-%Y")
-      }, error = function(e) {
-        # If we can't convert, leave as is
-        message("Could not convert Date to required format")
-      })
+      # Process each date individually to avoid losing any values
+      formatted_dates <- character(length(data$Date))
+      
+      for (i in seq_along(data$Date)) {
+        current_date <- data$Date[i]
+        
+        # Skip NA or empty values
+        if (is.na(current_date) || current_date == "") {
+          formatted_dates[i] <- current_date
+          next
+        }
+        
+        # Try Unix timestamp first (for large numeric values)
+        if (!is.na(suppressWarnings(as.numeric(current_date))) && 
+            nchar(as.character(current_date)) >= 9) {
+          timestamp <- as.numeric(current_date)
+          tryCatch({
+            # Convert Unix timestamp to date
+            formatted_dates[i] <- format(as.POSIXct(timestamp, origin="1970-01-01"), "%m-%d-%Y")
+          }, error = function(e) {
+            # If conversion fails, keep original
+            formatted_dates[i] <- original_dates[i]
+          })
+        } else {
+          # Try parsing as regular date with multiple formats
+          tryCatch({
+            date_parsed <- lubridate::parse_date_time(
+              current_date, 
+              orders = c("mdy", "ymd", "dmy", "m-d-y", "y-m-d", "d-m-y", "m/d/y", "y/m/d", "d/m/y")
+            )
+            
+            if (!is.na(date_parsed)) {
+              formatted_dates[i] <- format(date_parsed, "%m-%d-%Y")
+            } else {
+              formatted_dates[i] <- original_dates[i]  # Keep original if parsing fails
+            }
+          }, error = function(e) {
+            formatted_dates[i] <- original_dates[i]  # Keep original if error occurs
+          })
+        }
+      }
+      
+      # Replace with formatted dates, preserving NAs
+      data$Date <- formatted_dates
+      
+      # Add debugging output
+      message("Processed dates - sample:")
+      message(paste(head(original_dates), "→", head(data$Date)))
     }
     
     # Make sure the essential columns exist, if not, create empty ones
@@ -815,6 +858,7 @@ server <- function(input, output, session) {
     return(data)
   }
   
+  # Modify your read_gs_data function to add this right after reading the sheet
   read_gs_data <- function() {
     # Updated to the new sheet ID
     sheet_id <- "1VLDPepfjS0CVmSWo5cddhM8W2_45W-RjESSQVByN6Lo"
@@ -831,14 +875,21 @@ server <- function(input, output, session) {
         return(NULL)
       }
       
-      # Print column names for debugging
-      message("Original column names: ", paste(names(data), collapse = ", "))
+      # NEW: Log raw date values to console
+      if ("date" %in% tolower(names(data))) {
+        date_col <- names(data)[tolower(names(data)) == "date"]
+        message("Raw date values from sheet:")
+        message(paste(head(data[[date_col]], 10), collapse = ", "))
+        
+        # Check data types
+        message("Date column class: ", class(data[[date_col]]))
+        message("First few values class: ", 
+                paste(sapply(head(data[[date_col]], 3), class), collapse = ", "))
+      }
       
+      # Continue with normal processing
       data <- format_column_names(data)
       data <- process_data(data)
-      
-      # Print processed column names for debugging
-      message("Processed column names: ", paste(names(data), collapse = ", "))
       
       error_rv(NULL)
       return(data)
@@ -1088,12 +1139,12 @@ server <- function(input, output, session) {
           list(
             extend = 'excel',
             text = 'Excel',
-            title = paste('Federal_Housing_Policy_Tracker_', Sys.Date(), sep='')
+            title = paste('Federal_Housing_Action_Tracker_', Sys.Date(), sep='')
           ),
           list(
             extend = 'pdf',
             text = 'PDF',
-            title = paste('Federal Housing Policy Tracker - ', Sys.Date(), sep=''),
+            title = paste('Federal Housing Action Tracker - ', Sys.Date(), sep=''),
             orientation = 'landscape'
           )
         ),
@@ -1109,7 +1160,7 @@ server <- function(input, output, session) {
   # Download handler - Keep original department names in the download
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste("federal-housing-policy-tracker-", Sys.Date(), ".csv", sep="")
+      paste("federal-housing-action-tracker-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
       # Get the data with original department names
