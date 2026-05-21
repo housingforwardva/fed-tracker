@@ -11,13 +11,15 @@ Live URL: <https://housingforwardva.shinyapps.io/fed_tracker/>
 | File / folder | Purpose |
 |---|---|
 | `app.R` | **Production app — the only file that runs.** All development happens here. |
-| `app.R` | Legacy version, excluded from deployment (`ignoredFiles` in rsconnect config). Do not edit. |
 | `www/vha-logo.png` | Virginia Housing Alliance header logo |
 | `www/hfvlogo.png` | HousingForward VA footer logo |
 | `rsconnect/documents/app.R/…/fed_tracker.dcf` | shinyapps.io deployment config (account: `housingforwardva`, app: `fed_tracker`) |
-| `renv/` | renv bootstrap files — run `renv::restore()` to install packages |
-| `renv.lock` | **Incomplete** — only locks `renv` itself; app package versions are floating. Run `renv::snapshot()` after any package change. |
+| `.Rprofile` | **Customised** — loads renv from the user's global library instead of sourcing `renv/activate.R`. See "Known issues" below. |
+| `.Renviron` | Gitignored. Machine-specific renv path overrides. See [SETUP.md](SETUP.md). |
+| `renv/` | renv state. `activate.R` is renv-generated but is *not* sourced by our `.Rprofile`; kept for portability. |
+| `renv.lock` | Locks all 120 runtime packages plus renv. Run `renv::snapshot()` after adding or upgrading a package. |
 | `fed_tracker.Rproj` | RStudio project config |
+| `SETUP.md` | First-time clone instructions. Read before opening the project on a new machine. |
 
 ## Architecture & data flow
 
@@ -41,12 +43,13 @@ Key facts:
 
 ## Development setup
 
-```r
-# 1. Open fed_tracker.Rproj in RStudio
-# 2. Restore packages
-renv::restore()
+**First-time clone on a new machine:** read [SETUP.md](SETUP.md) first — `renv` must be installed globally before this project's customised `.Rprofile` can activate it.
 
-# 3. Run locally (no Google auth needed — sheet is public)
+Day-to-day:
+
+```r
+# 1. Open fed_tracker.Rproj in RStudio (renv activates automatically)
+# 2. Run locally (no Google auth needed — sheet is public)
 shiny::runApp("app.R")
 ```
 
@@ -63,7 +66,7 @@ rsconnect::deployApp(
 )
 ```
 
-`app.R` and `renv.lock` are excluded from the bundle via `ignoredFiles` in `fed_tracker.dcf`. Do not add them back.
+`renv.lock` is excluded from the bundle via `ignoredFiles` in `fed_tracker.dcf` — shinyapps.io installs packages from its own DESCRIPTION-parsing routine, not from renv. Do not remove that exclusion. The customised `.Rprofile` IS deployed, but it no-ops on shinyapps.io because `requireNamespace("renv")` returns FALSE there.
 
 ## Bug tracking
 
@@ -81,3 +84,27 @@ Open issues and fragilities are tracked as GitHub Issues in this repo.
 **Status colours** — five status values have hardcoded CSS classes (lines ~396–419). A new status value will appear in the filter dropdown automatically but will have no colour until a CSS rule is added.
 
 **Auto-refresh** — `autoInvalidate` fires every 86,400,000 ms (24 hours). Timezone is the server's system time (UTC on shinyapps.io).
+
+## Known issues
+
+### RStudio + renv on the R: drive (Windows)
+
+The original developer's machine has the repo on a Windows drive (`R:\`) whose root metadata is broken: `fsutil fsinfo volumeinfo R:\` returns `ERROR_PATH_NOT_FOUND` even though every child path works normally. Two distinct symptoms emerge from this single anomaly:
+
+1. **rsession crashes on project open.** The renv-generated bootstrap in `renv/activate.R` runs `dir.create(<lib>, recursive = TRUE)`. The recursive parent-walk hits the R:\ root, returns code 3, and R dies (taking rsession with it; RStudio shows "Cannot Connect to R"). A red herring also appears in `rsession-JTK.log`: `system error 3` reading `scratch-path` from `SessionProjectContext.cpp:153`. That error log is benign — the actual crash is in renv's bootstrap, downstream.
+2. **`renv::install()` is extremely slow.** Renv stages packages at `<project>/renv/staging/` (on R:), then moves them to the library via Robocopy with `/R:5 /W:10`. Each transient R: read error costs up to 50 s of retries. A 120-package install took 1300 s.
+
+**Workaround in this repo** (do not revert without replacing):
+- **`.Rprofile`** — replaces `source("renv/activate.R")` with a direct `renv::load()` call from the user's global library. Skips the bootstrap entirely.
+- **`.Renviron`** (gitignored, machine-specific) — sets `RENV_PATHS_LIBRARY` / `RENV_PATHS_CACHE` / `RENV_PATHS_ROOT` to C: paths so renv never creates its library on R:, and `RENV_CONFIG_INSTALL_STAGED=FALSE` so installs skip the Robocopy staging step entirely. See [SETUP.md](SETUP.md) for the template.
+- **`renv/activate.R`** — untouched. The customised `.Rprofile` simply doesn't source it. Kept so a clone on a normal drive can still fall back to stock renv if someone reverts the `.Rprofile`.
+
+**Requirements on this machine:**
+- renv installed globally: `install.packages("renv")`.
+- A `.Renviron` (gitignored) with the path overrides — see [SETUP.md](SETUP.md).
+
+**If the workaround is lost** (e.g. `renv::init()` rewrites `.Rprofile`): restore from git. The original renv-generated `.Rprofile` is also visible in this repo's git history.
+
+**Other developers (repos on a healthy drive):** the workaround is harmless. `renv::load()` works on any drive; the only behavioural difference from stock renv is that `install.packages("renv")` must be run once before the project will activate (stock `activate.R` does this automatically). No `.Renviron` is needed.
+
+**Long-term resolution:** the underlying `R:\` root-metadata problem warrants `chkdsk R: /scan` (read-only) from an elevated cmd, and `chkdsk R: /f` if errors are reported. Until that is fixed, other tools beyond RStudio may also misbehave on R:.

@@ -2,3 +2,13 @@
 .Rhistory
 .RData
 .Ruserdata
+.positai
+
+# Machine-specific renv path overrides — see SETUP.md
+.Renviron
+
+# Local backup of the renv-generated .Rprofile (see CLAUDE.md "Known issues")
+.Rprofile.disabled
+
+# Claude Code per-project state
+.claude/
