@@ -506,20 +506,6 @@ customCSS <- HTML("
       grid-column: span 1;
     }
   }
- /*
-  .app-footer {
-    background-color: white;
-    padding: 15px 0;
-    margin-top: 20px;
-    border-top: 1px solid #e0e0e0;
-    text-align: center;
-  }
-  
-  .footer-content {
-    font-size: 0.9rem;
-    color: #666;
-  }
-*/
 
   /* New footer logo styles */
   .footer-logo-section {
@@ -841,10 +827,8 @@ server <- function(input, output, session) {
       
       # Replace with formatted dates, preserving NAs
       data$Date <- formatted_dates
-      
-      # Add debugging output
-      message("Processed dates - sample:")
-      message(paste(head(original_dates), "→", head(data$Date)))
+      # Convert to Date class so downstream sorting is chronological, not lexicographic
+      data$Date <- as.Date(data$Date, format = "%m-%d-%Y")
     }
     
     # Make sure the essential columns exist, if not, create empty ones
@@ -996,7 +980,12 @@ server <- function(input, output, session) {
     if (input$actionFilter != "" && "Action" %in% names(data)) {
       data <- data %>% filter(Action == input$actionFilter)
     }
-    
+
+    # Pre-sort by date so initial load is newest-first regardless of DataTables JS sort
+    if ("Date" %in% names(data)) {
+      data <- data |> arrange(desc(Date))
+    }
+
     # Ensure key columns exist
     required_cols <- c("Date", "Department", "Action", "Status", "Description", "Link")
     missing_cols <- setdiff(required_cols, names(data))
@@ -1157,43 +1146,17 @@ server <- function(input, output, session) {
     )
   })
   
-  # Download handler - Keep original department names in the download
   output$downloadData <- downloadHandler(
     filename = function() {
       paste("federal-housing-action-tracker-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
-      # Get the data with original department names
       data <- data_rv()
-      
-      if(is.null(data)) {
-        # If we can't get the raw data, use what we have
-        data <- data_rv()
-        
-        # Remove HTML tags from all columns if they exist
-        for(col in names(data)) {
-          if(is.character(data[[col]])) {
-            data[[col]] <- gsub("<.*?>", "", data[[col]])
-          }
+      if (!is.null(data)) {
+        cols_to_drop <- intersect(c("original_dept", "Submitter"), names(data))
+        if (length(cols_to_drop) > 0) {
+          data <- data %>% select(-all_of(cols_to_drop))
         }
-      }
-      
-      if(!is.null(data)) {
-        # Remove helper columns used for styling
-        columns_to_remove <- c("original_dept")
-        
-        # Also remove Submitter column if present
-        if ("Submitter" %in% names(data)) {
-          columns_to_remove <- c(columns_to_remove, "Submitter")
-        }
-        
-        # Remove the specified columns if they exist
-        for (col in columns_to_remove) {
-          if (col %in% names(data)) {
-            data <- data %>% select(-all_of(col))
-          }
-        }
-        
         write.csv(data, file, row.names = FALSE)
       }
     }
