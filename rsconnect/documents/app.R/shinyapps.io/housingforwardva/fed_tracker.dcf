@@ -10,4 +10,4 @@ url: https://housingforwardva.shinyapps.io/fed_tracker/
 version: 1
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: app.R|renv.lock
+ignoredFiles: renv.lock

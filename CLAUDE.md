@@ -10,11 +10,11 @@ Live URL: <https://housingforwardva.shinyapps.io/fed_tracker/>
 
 | File / folder | Purpose |
 |---|---|
-| `new_app.R` | **Production app — the only file that runs.** All development happens here. |
+| `app.R` | **Production app — the only file that runs.** All development happens here. |
 | `app.R` | Legacy version, excluded from deployment (`ignoredFiles` in rsconnect config). Do not edit. |
 | `www/vha-logo.png` | Virginia Housing Alliance header logo |
 | `www/hfvlogo.png` | HousingForward VA footer logo |
-| `rsconnect/documents/new_app.R/…/fed_tracker.dcf` | shinyapps.io deployment config (account: `housingforwardva`, app: `fed_tracker`) |
+| `rsconnect/documents/app.R/…/fed_tracker.dcf` | shinyapps.io deployment config (account: `housingforwardva`, app: `fed_tracker`) |
 | `renv/` | renv bootstrap files — run `renv::restore()` to install packages |
 | `renv.lock` | **Incomplete** — only locks `renv` itself; app package versions are floating. Run `renv::snapshot()` after any package change. |
 | `fed_tracker.Rproj` | RStudio project config |
@@ -47,16 +47,16 @@ Key facts:
 renv::restore()
 
 # 3. Run locally (no Google auth needed — sheet is public)
-shiny::runApp("new_app.R")
+shiny::runApp("app.R")
 ```
 
-Google Sheet ID is hardcoded in `new_app.R` near the top of `read_gs_data()`. The sheet uses `gs4_deauth()` (public read access), so no OAuth token is required.
+Google Sheet ID is hardcoded in `app.R` near the top of `read_gs_data()`. The sheet uses `gs4_deauth()` (public read access), so no OAuth token is required.
 
 ## Deployment
 
 ```r
 rsconnect::deployApp(
-  appFiles = "new_app.R",
+  appFiles = "app.R",
   appName  = "fed_tracker",
   account  = "housingforwardva",
   server   = "shinyapps.io"

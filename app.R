@@ -9,10 +9,10 @@ library(lubridate) # For better date handling
 customCSS <- HTML("
   /* Root variables for consistent styling */
   :root {
-    --primary-color: #3498db;
-    --secondary-color: #2ecc71;
-    --dark-color: #2c3e50;
-    --light-color: #ecf0f1;
+    --primary-color: #074e4d;
+    --secondary-color: #a0d093;
+    --dark-color: #074e4d;
+    --light-color: #a0d093;
     --hover-color: #e74c3c;
     --text-color: #333333;
     --border-radius: 8px;
@@ -30,6 +30,7 @@ customCSS <- HTML("
     --hhs-color: #E91E63;
     --hud-color: #3F51B5;
     --interior-color: #795548;
+    --justice-color: #3F51B5;
     --state-color: #009688;
     --treasury-color: #FF9800;
     --usich-color: #607D8B;
@@ -64,6 +65,19 @@ customCSS <- HTML("
     color: var(--dark-color);
   }
 
+  /* Department icon styles */
+  .dept-icon {
+    margin-right: 5px;
+    font-size: 1.1em;
+    vertical-align: middle;
+  }
+  
+  /* Department Names with Icons */
+  .dept-name {
+    display: inline-block;
+    white-space: normal !important;
+  }
+
   /* Full screen mode styling */
   .full-screen {
     position: fixed !important;
@@ -86,6 +100,22 @@ customCSS <- HTML("
   .full-screen .dataTables_scrollBody {
     flex: 1 !important;
     height: auto !important;
+  }
+
+  /* Exit button styling */
+  #exitFullScreen {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 10000;
+    display: none; /* Hidden by default */
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
   }
 
   /* Loading overlay */
@@ -167,6 +197,16 @@ customCSS <- HTML("
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
   }
+  
+  /* Reset filters button styling */
+  .btn-reset {
+    background-color: #6c757d; /* Different color for reset button */
+    color: white;
+  }
+  
+  .btn-reset:hover {
+    background-color: #5a6268;
+  }
 
   /* Table styling */
   #tableContainer {
@@ -223,65 +263,133 @@ customCSS <- HTML("
     white-space: normal !important;
   }
   
-  /* Department color styling */
+  /* Department color styling (for cells only, not rows) */
   .department-Agriculture {
     background-color: rgba(139, 195, 74, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
-  .department-CFPB, .department-Consumer.Financial.Protection.Bureau {
+  .department-CFPB, .department-Consumer\\.Financial\\.Protection\\.Bureau {
     background-color: rgba(0, 188, 212, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
   .department-Commerce {
     background-color: rgba(255, 87, 34, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
   .department-Education {
     background-color: rgba(156, 39, 176, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
   .department-Energy {
     background-color: rgba(255, 193, 7, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
-  .department-EPA, .department-Environmental.Protection.Agency {
+  .department-EPA, .department-Environmental\\.Protection\\.Agency {
     background-color: rgba(76, 175, 80, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
-  .department-FEMA, .department-Federal.Emergency.Management.Agency {
+  .department-FEMA, .department-Federal\\.Emergency\\.Management\\.Agency {
     background-color: rgba(244, 67, 54, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
-  .department-FHFA, .department-Federal.Housing.Finance.Agency {
+  .department-FHFA, .department-Federal\\.Housing\\.Finance\\.Agency {
     background-color: rgba(156, 39, 176, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
-  .department-HHS, .department-Health.and.Human.Services {
+  .department-HHS, .department-Health\\.and\\.Human\\.Services {
     background-color: rgba(233, 30, 99, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
-  .department-HUD, .department-Housing.and.Urban.Development {
+  .department-HUD, .department-Housing\\.and\\.Urban\\.Development {
     background-color: rgba(63, 81, 181, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
   .department-Interior {
     background-color: rgba(121, 85, 72, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
+  }
+  
+  .department-Justice, .department-Department\\.of\\.Justice, .department-DOJ {
+    background-color: rgba(63, 81, 181, 0.3) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
   .department-State {
     background-color: rgba(0, 150, 136, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
   .department-Treasury {
     background-color: rgba(255, 152, 0, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
-  .department-USICH, .department-United.States.Interagency.Council.on.Homelessness {
+  .department-USICH, .department-United\\.States\\.Interagency\\.Council\\.on\\.Homelessness {
     background-color: rgba(96, 125, 139, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
-  .department-VA, .department-Veterans.Affairs {
+  .department-VA, .department-Veterans\\.Affairs {
     background-color: rgba(103, 58, 183, 0.2) !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
   
   /* Status styling */
@@ -398,26 +506,79 @@ customCSS <- HTML("
       grid-column: span 1;
     }
   }
+
+  /* New footer logo styles */
+  .footer-logo-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .footer-logo {
+    height: 40px;
+    width: auto;
+  }
+  
+  .footer-text {
+    display: inline-block;
+  }
+  
+  /* Responsive footer logo */
+  @media (max-width: 576px) {
+    .footer-logo-section {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .footer-logo {
+      height: 30px;
+    }
+  } 
+  
 ")
 
 # UI definition
 ui <- fluidPage(
   useShinyjs(),
   tags$head(
-    tags$title("Federal Housing Policy Tracker"),
+    tags$title("Federal Housing Action Tracker"),
     tags$style(customCSS),
+    # Add Font Awesome directly from CDN
     tags$link(rel = "stylesheet", 
               href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"),
+    # Add JavaScript for full-screen toggle
     tags$script("
       $(document).ready(function() {
-        window.toggleFullScreen = function() {
-          $('#tableContainer').toggleClass('full-screen');
-          if ($('#tableContainer').hasClass('full-screen')) {
-            $('#enterFullScreen').html('<i class=\"fas fa-compress\"></i> Exit');
-          } else {
-            $('#enterFullScreen').html('<i class=\"fas fa-expand\"></i> Expand');
-          }
-        };
+        // Enter full-screen mode
+        $('#enterFullScreen').on('click', function() {
+          $('#tableContainer').addClass('full-screen');
+          $('#exitFullScreen').show();
+          
+          // Adjust table columns after a short delay
+          setTimeout(function() {
+            if (typeof $.fn.dataTable !== 'undefined') {
+              $('.dataTable').DataTable().columns.adjust().draw();
+            }
+          }, 100);
+          
+          return false;
+        });
+        
+        // Exit full-screen mode
+        $('#exitFullScreen').on('click', function() {
+          $('#tableContainer').removeClass('full-screen');
+          $(this).hide();
+          
+          // Adjust table columns after a short delay
+          setTimeout(function() {
+            if (typeof $.fn.dataTable !== 'undefined') {
+              $('.dataTable').DataTable().columns.adjust().draw();
+            }
+          }, 100);
+          
+          return false;
+        });
       });
     ")
   ),
@@ -426,8 +587,8 @@ ui <- fluidPage(
   div(class = "app-header",
       div(class = "container-fluid",
           div(class = "header-content",
-              tags$img(src = "hfvlogo.png", height = "30px", class = "mr-2"),
-              tags$h1("Federal Housing Policy Tracker", class = "header-title")
+              tags$img(src = "vha-logo.png", height = "30px", class = "mr-2"),
+              tags$h1("Federal Housing Action Tracker", class = "header-title")
           )
       )
   ),
@@ -448,16 +609,20 @@ ui <- fluidPage(
                              icon = icon("download"),
                              class = "btn btn-success"),
               
+              # Expand button with HTML icon
               actionButton("enterFullScreen", 
-                           "Expand",
-                           icon = icon("expand"),
-                           class = "btn btn-info",
-                           onclick = "toggleFullScreen()")
+                           HTML('<i class="fas fa-expand"></i> Expand'),
+                           class = "btn btn-info"),
+              
+              # NEW: Add Reset Filters button
+              actionButton("resetFilters", 
+                           HTML('<i class="fas fa-undo"></i> Reset Filters'),
+                           class = "btn btn-reset")
           ),
           
           # Auto-refresh info (moved to be next to buttons)
           div(class = "refresh-info",
-              icon("info-circle"), 
+              tags$i(class = "fas fa-info-circle"), 
               "Auto-refresh every 24h"
           ),
           
@@ -497,6 +662,11 @@ ui <- fluidPage(
       
       # Main Table Container - Full Width
       div(id = "tableContainer",
+          # Add exit button that is hidden by default
+          actionButton("exitFullScreen", 
+                       HTML('<i class="fas fa-times"></i> Exit Full Screen'),
+                       class = "btn btn-danger"),
+          
           div(id = "loadingOverlay", class = "loading-overlay",
               style = "display: none;",
               tags$div(class = "spinner-border text-primary",
@@ -506,12 +676,70 @@ ui <- fluidPage(
           textOutput("error_message") %>% 
             tagAppendAttributes(style = "color: red; margin-bottom: 10px;"),
           DTOutput("table")
+      ),
+      div(class = "app-footer",
+          div(class = "container-fluid",
+              div(class = "footer-content",
+                  div(class = "footer-logo-section",
+                      tags$img(src = "hfvlogo.png", alt = "HousingForward Virginia Logo", class = "footer-logo"),
+                      div(class = "footer-text",
+                          "Built by ",
+                          tags$a(href = "https://housingforwardva.org", 
+                                 "HousingForward Virginia", 
+                                 target = "_blank"),
+                          " © ", format(Sys.Date(), "%Y")
+                      )
+                  )
+              )
+          )
       )
   )
 )
 
 # Server logic
 server <- function(input, output, session) {
+  # Get department icon mapping function
+  get_dept_icon <- function(department) {
+    icon_map <- list(
+      "Agriculture" = "fas fa-seedling",
+      "CFPB" = "fas fa-money-bill-wave",
+      "Consumer Financial Protection Bureau" = "fas fa-money-bill-wave",
+      "Commerce" = "fas fa-store",
+      "Education" = "fas fa-graduation-cap",
+      "Energy" = "fas fa-bolt",
+      "EPA" = "fas fa-leaf",
+      "Environmental Protection Agency" = "fas fa-leaf",
+      "FEMA" = "fas fa-house-damage",
+      "Federal Emergency Management Agency" = "fas fa-house-damage",
+      "FHFA" = "fas fa-home",
+      "Federal Housing Finance Agency" = "fas fa-home",
+      "HHS" = "fas fa-heartbeat",
+      "Health and Human Services" = "fas fa-heartbeat",
+      "HUD" = "fas fa-building",
+      "Housing and Urban Development" = "fas fa-building",
+      "Interior" = "fas fa-mountain",
+      "Justice" = "fas fa-gavel",
+      "Department of Justice" = "fas fa-gavel",
+      "DOJ" = "fas fa-gavel",
+      "State" = "fas fa-flag-usa",
+      "Treasury" = "fas fa-dollar-sign",
+      "USICH" = "fas fa-users",
+      "United States Interagency Council on Homelessness" = "fas fa-users",
+      "VA" = "fas fa-medal",
+      "Veterans Affairs" = "fas fa-medal"
+    )
+    
+    # Get the icon class or use a default
+    icon_class <- icon_map[[department]]
+    if (is.null(icon_class)) {
+      icon_class <- "fas fa-landmark" # Default icon for departments not in our list
+    }
+    
+    # Return the HTML for the icon
+    return(sprintf('<i class="%s dept-icon"></i>', icon_class))
+  }
+  
+  # Your existing functions
   format_column_names <- function(data) {
     # Mapping based on the PDF document describing the structure
     name_mapping <- c(
@@ -547,16 +775,60 @@ server <- function(input, output, session) {
         select(-any_of(existing_cols_to_remove))
     }
     
-    # Format date columns to mm-dd-yyyy format if they exist
+    # Improved date handling that preserves all values
     if("Date" %in% names(data)) {
-      # Try to convert to date if possible, otherwise leave as is
-      tryCatch({
-        data$Date <- as.Date(data$Date)
-        data$Date <- format(data$Date, "%m-%d-%Y")
-      }, error = function(e) {
-        # If we can't convert, leave as is
-        message("Could not convert Date to required format")
-      })
+      # Create a copy of the original dates for debugging/fallback
+      original_dates <- data$Date
+      
+      # Remove leading apostrophes from dates if they exist
+      data$Date <- gsub("^'", "", data$Date)
+      
+      # Process each date individually to avoid losing any values
+      formatted_dates <- character(length(data$Date))
+      
+      for (i in seq_along(data$Date)) {
+        current_date <- data$Date[i]
+        
+        # Skip NA or empty values
+        if (is.na(current_date) || current_date == "") {
+          formatted_dates[i] <- current_date
+          next
+        }
+        
+        # Try Unix timestamp first (for large numeric values)
+        if (!is.na(suppressWarnings(as.numeric(current_date))) && 
+            nchar(as.character(current_date)) >= 9) {
+          timestamp <- as.numeric(current_date)
+          tryCatch({
+            # Convert Unix timestamp to date
+            formatted_dates[i] <- format(as.POSIXct(timestamp, origin="1970-01-01"), "%m-%d-%Y")
+          }, error = function(e) {
+            # If conversion fails, keep original
+            formatted_dates[i] <- original_dates[i]
+          })
+        } else {
+          # Try parsing as regular date with multiple formats
+          tryCatch({
+            date_parsed <- lubridate::parse_date_time(
+              current_date, 
+              orders = c("mdy", "ymd", "dmy", "m-d-y", "y-m-d", "d-m-y", "m/d/y", "y/m/d", "d/m/y")
+            )
+            
+            if (!is.na(date_parsed)) {
+              formatted_dates[i] <- format(date_parsed, "%m-%d-%Y")
+            } else {
+              formatted_dates[i] <- original_dates[i]  # Keep original if parsing fails
+            }
+          }, error = function(e) {
+            formatted_dates[i] <- original_dates[i]  # Keep original if error occurs
+          })
+        }
+      }
+      
+      # Replace with formatted dates, preserving NAs
+      data$Date <- formatted_dates
+      # Convert to Date class so downstream sorting is chronological, not lexicographic
+      data$Date <- as.Date(data$Date, format = "%m-%d-%Y")
     }
     
     # Make sure the essential columns exist, if not, create empty ones
@@ -570,6 +842,7 @@ server <- function(input, output, session) {
     return(data)
   }
   
+  # Modify your read_gs_data function to add this right after reading the sheet
   read_gs_data <- function() {
     # Updated to the new sheet ID
     sheet_id <- "1VLDPepfjS0CVmSWo5cddhM8W2_45W-RjESSQVByN6Lo"
@@ -586,14 +859,21 @@ server <- function(input, output, session) {
         return(NULL)
       }
       
-      # Print column names for debugging
-      message("Original column names: ", paste(names(data), collapse = ", "))
+      # NEW: Log raw date values to console
+      if ("date" %in% tolower(names(data))) {
+        date_col <- names(data)[tolower(names(data)) == "date"]
+        message("Raw date values from sheet:")
+        message(paste(head(data[[date_col]], 10), collapse = ", "))
+        
+        # Check data types
+        message("Date column class: ", class(data[[date_col]]))
+        message("First few values class: ", 
+                paste(sapply(head(data[[date_col]], 3), class), collapse = ", "))
+      }
       
+      # Continue with normal processing
       data <- format_column_names(data)
       data <- process_data(data)
-      
-      # Print processed column names for debugging
-      message("Processed column names: ", paste(names(data), collapse = ", "))
       
       error_rv(NULL)
       return(data)
@@ -652,6 +932,13 @@ server <- function(input, output, session) {
     }
   })
   
+  # NEW: Reset Filters Button Logic
+  observeEvent(input$resetFilters, {
+    updateSelectInput(session, "deptFilter", selected = "")
+    updateSelectInput(session, "statusFilter", selected = "")
+    updateSelectInput(session, "actionFilter", selected = "")
+  })
+  
   # Auto refresh timer
   autoInvalidate <- reactiveTimer(86400000)  # 24 hours
   
@@ -665,7 +952,7 @@ server <- function(input, output, session) {
     data_rv(read_gs_data())
   })
   
-  # Table output with fixed cell heights
+  # Table output with cell-specific department styling
   output$table <- renderDT({
     data <- data_rv()
     
@@ -693,7 +980,12 @@ server <- function(input, output, session) {
     if (input$actionFilter != "" && "Action" %in% names(data)) {
       data <- data %>% filter(Action == input$actionFilter)
     }
-    
+
+    # Pre-sort by date so initial load is newest-first regardless of DataTables JS sort
+    if ("Date" %in% names(data)) {
+      data <- data |> arrange(desc(Date))
+    }
+
     # Ensure key columns exist
     required_cols <- c("Date", "Department", "Action", "Status", "Description", "Link")
     missing_cols <- setdiff(required_cols, names(data))
@@ -705,9 +997,29 @@ server <- function(input, output, session) {
       message("Created missing columns: ", paste(missing_cols, collapse = ", "))
     }
     
-    # Format description column for displaying full text
-    if ("Description" %in% names(data)) {
-      # No special formatting needed now, we'll let it display normally
+    # Make a copy of original departments for styling and download
+    data$original_dept <- data$Department
+    
+    # Format department column with icons and class for styling
+    if ("Department" %in% names(data)) {
+      # Handle NA values
+      data$Department[is.na(data$Department)] <- ""
+      
+      # Only format non-empty department names
+      dept_idx <- which(data$Department != "")
+      if (length(dept_idx) > 0) {
+        # Add icons and department-specific class to department cells
+        for (i in dept_idx) {
+          dept_name <- data$Department[i]
+          dept_class <- gsub(" ", "\\.", dept_name)
+          
+          # Add the icon in front of the department name with department-specific class
+          data$Department[i] <- sprintf(
+            '<span class="dept-name department-%s">%s%s</span>',
+            dept_class, get_dept_icon(dept_name), dept_name
+          )
+        }
+      }
     }
     
     # Format Links as clickable links
@@ -724,19 +1036,6 @@ server <- function(input, output, session) {
         )
       }
     }
-    
-    # Add department class for styling
-    data$dept_class <- gsub(" ", ".", data$Department)
-    
-    # Row callback for department styling
-    row_callback <- JS(
-      "function(row, data, index) {",
-      "  var deptClass = data[data.length-1];", # dept_class is the last column
-      "  if (deptClass) {",
-      "    $(row).addClass('department-' + deptClass);",
-      "  }",
-      "}"
-    )
     
     # Add status class for styling
     if ("Status" %in% names(data)) {
@@ -794,8 +1093,8 @@ server <- function(input, output, session) {
           targets = i - 1,  # DT uses 0-based indexing
           className = class_mappings[[col_name]]
         )
-      } else if (col_name != "dept_class" && col_name != "Submitter") {
-        # Default styling for other columns (except dept_class and Submitter)
+      } else if (!col_name %in% c("original_dept", "Submitter")) {
+        # Default styling for other columns (except helper columns)
         col_defs[[length(col_defs) + 1]] <- list(
           targets = i - 1,
           className = 'wrappable'
@@ -803,22 +1102,15 @@ server <- function(input, output, session) {
       }
     }
     
-    # Hide the dept_class column used for styling
-    if ("dept_class" %in% names(data)) {
-      dept_class_index <- which(names(data) == "dept_class") - 1
-      col_defs[[length(col_defs) + 1]] <- list(
-        targets = dept_class_index,
-        visible = FALSE
-      )
-    }
-    
-    # Hide the Submitter column
-    if ("Submitter" %in% names(data)) {
-      submitter_index <- which(names(data) == "Submitter") - 1
-      col_defs[[length(col_defs) + 1]] <- list(
-        targets = submitter_index,
-        visible = FALSE
-      )
+    # Hide helper columns
+    for (col_name in c("original_dept", "Submitter")) {
+      if (col_name %in% names(data)) {
+        col_index <- which(names(data) == col_name) - 1
+        col_defs[[length(col_defs) + 1]] <- list(
+          targets = col_index,
+          visible = FALSE
+        )
+      }
     }
     
     # Create and return the datatable
@@ -830,19 +1122,18 @@ server <- function(input, output, session) {
         scrollY = "60vh",
         autoWidth = FALSE,
         columnDefs = col_defs,
-        rowCallback = row_callback,
         dom = 'Bfrtip',
         buttons = list(
           'copy',
           list(
             extend = 'excel',
             text = 'Excel',
-            title = paste('Federal_Housing_Policy_Tracker_', Sys.Date(), sep='')
+            title = paste('Federal_Housing_Action_Tracker_', Sys.Date(), sep='')
           ),
           list(
             extend = 'pdf',
             text = 'PDF',
-            title = paste('Federal Housing Policy Tracker - ', Sys.Date(), sep=''),
+            title = paste('Federal Housing Action Tracker - ', Sys.Date(), sep=''),
             orientation = 'landscape'
           )
         ),
@@ -851,49 +1142,26 @@ server <- function(input, output, session) {
       extensions = 'Buttons',
       class = 'cell-border stripe hover compact',
       rownames = FALSE,
-      escape = FALSE
+      escape = FALSE  # Important to allow our HTML to render
     )
   })
   
-  # Download handler
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste("federal-housing-policy-tracker-", Sys.Date(), ".csv", sep="")
+      paste("federal-housing-action-tracker-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
-      # Get the data but make sure to exclude any HTML formatting we added
       data <- data_rv()
-      if ("Description" %in% names(data)) {
-        # Remove HTML tags from Description
-        data$Description <- gsub("<.*?>", "", data$Description)
-      }
-      if ("Link" %in% names(data)) {
-        # Remove HTML tags from Link
-        data$Link <- gsub("<.*?>", "", data$Link)
-      }
-      if ("Status" %in% names(data)) {
-        # Remove HTML tags from Status
-        data$Status <- gsub("<.*?>", "", data$Status)
-      }
-      
-      # Remove dept_class column used for styling
-      columns_to_remove <- c("dept_class")
-      
-      # Also remove Submitter column if present
-      if ("Submitter" %in% names(data)) {
-        columns_to_remove <- c(columns_to_remove, "Submitter")
-      }
-      
-      # Remove the specified columns if they exist
-      for (col in columns_to_remove) {
-        if (col %in% names(data)) {
-          data <- data %>% select(-all_of(col))
+      if (!is.null(data)) {
+        cols_to_drop <- intersect(c("original_dept", "Submitter"), names(data))
+        if (length(cols_to_drop) > 0) {
+          data <- data %>% select(-all_of(cols_to_drop))
         }
+        write.csv(data, file, row.names = FALSE)
       }
-      
-      write.csv(data, file, row.names = FALSE)
     }
   )
 }
 
+# Run the application 
 shinyApp(ui = ui, server = server)
