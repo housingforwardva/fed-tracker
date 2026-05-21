@@ -66,7 +66,7 @@ rsconnect::deployApp(
 )
 ```
 
-`renv.lock` is excluded from the bundle via `ignoredFiles` in `fed_tracker.dcf` — shinyapps.io installs packages from its own DESCRIPTION-parsing routine, not from renv. Do not remove that exclusion. The customised `.Rprofile` IS deployed, but it no-ops on shinyapps.io because `requireNamespace("renv")` returns FALSE there.
+`renv.lock` is excluded from the bundle via `ignoredFiles` in `fed_tracker.dcf` — shinyapps.io installs packages from its own DESCRIPTION-parsing routine, not from renv. Do not remove that exclusion. The customised `.Rprofile` is **excluded from deployment** via `ignoredFiles` in `fed_tracker.dcf` — shinyapps.io (Posit Connect) does have renv installed, so deploying `.Rprofile` would activate renv and hijack `.libPaths()` to an empty library, breaking the app at startup.
 
 ## Bug tracking
 

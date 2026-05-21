@@ -752,9 +752,12 @@ server <- function(input, output, session) {
       "url" = "Link"
     )
     
+    col_lower <- tolower(names(data))
+    
     for (old_name in names(name_mapping)) {
-      if (old_name %in% names(data)) {
-        names(data)[names(data) == old_name] <- name_mapping[old_name]
+      match_idx <- which(startsWith(col_lower, old_name))
+      if (length(match_idx) > 0) {
+        names(data)[match_idx[1]] <- name_mapping[old_name]
       }
     }
     

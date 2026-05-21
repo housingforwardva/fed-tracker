@@ -5,9 +5,9 @@ account: housingforwardva
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14462786
-bundleId: 10125340
+bundleId: 12024568
 url: https://housingforwardva.shinyapps.io/fed_tracker/
 version: 1
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: renv.lock
+ignoredFiles: .claude/settings.local.json|.Renviron|.Rprofile|.Rprofile.disabled|CLAUDE.md|README.md|renv.lock|SETUP.md
